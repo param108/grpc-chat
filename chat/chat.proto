@@ -1,0 +1,93 @@
+syntax="proto3";
+
+
+service Chat {
+        rpc WriteMessage(Message) returns (Response) {};
+        rpc ReadMessages(TimeDesc) returns (stream Message) {};
+        rpc Login(LoginRequest) returns (LoginResponse) {};
+        rpc CreateChat(CreateChatRequest) returns (CreateChatResponse) {};
+        rpc ListChats(ListChatRequest) returns (stream ChatDetail) {};
+        rpc JoinChat(JoinChatRequest) returns (JoinChatResponse) {};
+        rpc SetAvailability(SetAvailableRequest) returns (SetAvailableResponse) {};
+        rpc ListAvailability(ListAvailableRequest) returns (stream AvailableSlot) {};
+}
+
+message Message {
+        string Time = 1;
+        string Data = 2;
+        string ChatID = 3;
+        string Username = 4; // returned for display in ReadMessages
+        string UserToken = 5; // used for write
+}
+
+message Response {
+        bool Success = 1;
+        string Error = 2;
+}
+
+message TimeDesc {
+        string Time = 1;
+        string ChatID = 2;
+        string UserToken = 3;
+}
+
+message LoginRequest {
+        string Username = 1;
+        string FirebaseKey = 2;
+}
+
+message LoginResponse {
+        string UserToken = 1;
+        bool Success = 2;
+        string Error = 3;
+}
+
+message CreateChatRequest {
+        string UserToken = 1;
+        string ChatName = 2;
+}
+
+message CreateChatResponse {
+        string ChatID = 1;
+}
+
+message ListChatRequest {
+        string UserToken = 1;
+}
+
+message ChatDetail {
+        string UserID = 1;
+        string ChatName = 2;
+        string ChatID = 3;
+}
+
+message JoinChatRequest {
+        string UserToken = 1;
+        string ChatID = 2;
+}
+
+message JoinChatResponse {
+        bool Success = 1;
+        string Error = 2;
+}
+
+message SetAvailableRequest {
+        string UserToken = 1;
+        string StartTime = 2;
+        string EndTime = 3;
+}
+
+message SetAvailableResponse {
+        bool Success = 1;
+        string Error = 2;
+}
+
+message ListAvailableRequest {
+        string UserToken = 1;
+}
+
+message AvailableSlot {
+        string Username = 1;
+        string StartTime = 2;
+        string EndTime = 3;
+}
