@@ -41,6 +41,7 @@ func (m *MemoryChatClient) execute(words []string) {
 		}
 
 		UserToken = r
+		fmt.Println(UserToken)
 	case "create_chat":
 		if len(words) != 2 {
 			fmt.Println("Usage: create_chat <chat_name>")
@@ -51,9 +52,7 @@ func (m *MemoryChatClient) execute(words []string) {
 			fmt.Println("Failed to login:" + err.Error())
 			return
 		}
-
-		UserToken = r
-
+		fmt.Println(r)
 	case "list_chats":
 		if len(words) != 1 {
 			fmt.Println("Usage: list_chats")
@@ -70,7 +69,7 @@ func (m *MemoryChatClient) execute(words []string) {
 				strings.Join(detail.UserList, ","))
 		}
 	case "join_chat":
-		if len(words) != 1 {
+		if len(words) != 2 {
 			fmt.Println("Usage: join_chat <chat_id>")
 			return
 		}

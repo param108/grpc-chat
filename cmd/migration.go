@@ -51,6 +51,7 @@ func createMigrate() (*migrate.Migrate, error) {
 		password, host, port,
 		dbname)
 
+	fmt.Println(url)
 	db, err := sql.Open("postgres", url)
 	if err != nil {
 		fmt.Printf("failed to load the database: %s", err)

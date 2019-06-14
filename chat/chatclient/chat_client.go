@@ -135,7 +135,7 @@ func (m *MemoryChatClient) ListChats(userToken string) ([]*chat.ChatDetail, erro
 	}
 
 	chatDetail, err := chatListSocket.Recv()
-	for err != nil {
+	for err == nil {
 		ret = append(ret, chatDetail)
 		chatDetail, err = chatListSocket.Recv()
 	}

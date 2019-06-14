@@ -2,11 +2,10 @@ package chatserver
 
 import (
 	"context"
-	std_errors "errors"
+	//std_errors "errors"
 	"fmt"
 	"github.com/param108/grpc-chat-server/chat"
-	"github.com/param108/grpc-chat-server/errors"
-	"github.com/param108/grpc-chat-server/models"
+	//"github.com/param108/grpc-chat-server/errors"
 	"github.com/param108/grpc-chat-server/store"
 	"google.golang.org/grpc"
 	"net"
@@ -57,8 +56,7 @@ func (server *ChatServerImpl) Start() error {
 }
 
 func (server *ChatServerImpl) Login(ctx context.Context, loginRequest *chat.LoginRequest) (*chat.LoginResponse, error) {
-	_, err := server.DB.FindUser(loginRequest.Username)
-	var user *models.User
+	user, err := server.DB.FindUser(loginRequest.Username)
 	if err != nil {
 		userVal, err := server.DB.CreateUser(loginRequest.Username, loginRequest.FirebaseKey,
 			"user")
@@ -96,15 +94,16 @@ func (server *ChatServerImpl) CreateChat(ctx context.Context, createChatRequest 
 }
 
 func (server *ChatServerImpl) ListChats(listChatRequest *chat.ListChatRequest, callbacks chat.Chat_ListChatsServer) error {
-	user, err := server.DB.FindUserFromToken(listChatRequest.UserToken)
+	_, err := server.DB.FindUserFromToken(listChatRequest.UserToken)
 	if err != nil {
 		return err
 	}
 
-	if user.Role != "admin" {
-		err = errors.NewForbiddenError(std_errors.New("Not Admin"))
-		return err
-	}
+	// FIXME removing this check for now
+	// if user.Role != "admin" {
+	// 	err = errors.NewForbiddenError(std_errors.New("Not Admin"))
+	// 	return err
+	// }
 
 	chatGroups, err := server.DB.ListOpenChatGroups()
 	if err != nil {
@@ -131,10 +130,11 @@ func (server *ChatServerImpl) JoinChat(ctx context.Context, joinChatRequest *cha
 		return nil, err
 	}
 
-	if user.Role != "admin" {
-		err = errors.NewForbiddenError(std_errors.New("Not Admin"))
-		return &chat.JoinChatResponse{Success: false, Error: err.Code()}, err
-	}
+	// FIXME removing this check for now
+	// if user.Role != "admin" {
+	//	err = errors.NewForbiddenError(std_errors.New("Not Admin"))
+	//	return &chat.JoinChatResponse{Success: false, Error: err.Code()}, err
+	// }
 
 	err = server.DB.AddUserToChat(user.ID, joinChatRequest.ChatID)
 	if err != nil {
