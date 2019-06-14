@@ -7,6 +7,7 @@ const (
 	InternalError      = "internal-error"
 	AlreadyExistsError = "already-exists"
 	InvalidInputError  = "invalid-input"
+	Forbidden          = "Forbidden"
 )
 
 type GrpcChatError interface {

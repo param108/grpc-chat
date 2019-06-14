@@ -16,6 +16,7 @@ type ChatMessage struct {
 type ChatGroup struct {
 	ID       string
 	ChatName string
+	Status   string
 }
 
 type ChatMessageArchive struct {

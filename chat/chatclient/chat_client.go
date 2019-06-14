@@ -2,6 +2,7 @@ package chatclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/param108/grpc-chat-server/chat"
 	"google.golang.org/grpc"
@@ -83,20 +84,68 @@ func (m *MemoryChatClient) Start(cmd []string) error {
 
 }
 
-func (m *MemoryChatClient) Login(context.Context, *chat.LoginRequest) (*chat.LoginResponse, error) {
-	return nil, nil
+// Returns the UserToken for the user.
+func (m *MemoryChatClient) Login(username string, firebaseKey string) (string, error) {
+	ctx := context.TODO()
+	response, err := m.grpcClient.Login(ctx, &chat.LoginRequest{Username: username, FirebaseKey: firebaseKey})
+	if err != nil {
+		return "", err
+	}
+
+	if !response.Success {
+		return "", errors.New(response.Error)
+	}
+
+	return response.UserToken, nil
 }
 
-func (m *MemoryChatClient) CreateChat(context.Context, *chat.CreateChatRequest) (*chat.CreateChatResponse, error) {
-	return nil, nil
+// returns the chat ID
+func (m *MemoryChatClient) CreateChat(userToken string, chatName string) (string, error) {
+	ctx := context.TODO()
+	response, err := m.grpcClient.CreateChat(ctx,
+		&chat.CreateChatRequest{UserToken: userToken, ChatName: chatName})
+	if err != nil {
+		return "", err
+	}
+
+	if !response.Success {
+		return "", errors.New(response.Error)
+	}
+
+	return response.ChatID, nil
 }
 
-func (m *MemoryChatClient) ListChats(*chat.ListChatRequest, chat.Chat_ListChatsServer) error {
+func (m *MemoryChatClient) ListChats(userToken string) ([]*chat.ChatDetail, error) {
+	ctx := context.TODO()
+
+	ret := []*chat.ChatDetail{}
+	chatListSocket, err := m.grpcClient.ListChats(ctx, &chat.ListChatRequest{UserToken: userToken})
+	if err != nil {
+		return ret, err
+	}
+
+	chatDetail, err := chatListSocket.Recv()
+	for err != nil {
+		ret = append(ret, chatDetail)
+		chatDetail, err = chatListSocket.Recv()
+	}
+
+	return ret, nil
+}
+
+func (m *MemoryChatClient) JoinChat(userToken string, chatID string) error {
+	ctx := context.TODO()
+	req := &chat.JoinChatRequest{UserToken: userToken, ChatID: chatID}
+	response, err := m.grpcClient.JoinChat(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	if !response.Success {
+		return errors.New(response.Error)
+	}
+
 	return nil
-}
-
-func (m *MemoryChatClient) JoinChat(context.Context, *chat.JoinChatRequest) (*chat.JoinChatResponse, error) {
-	return nil, nil
 }
 
 func (m *MemoryChatClient) SetAvailability(context.Context, *chat.SetAvailableRequest) (*chat.SetAvailableResponse, error) {

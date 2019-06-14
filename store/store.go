@@ -18,4 +18,5 @@ type Store interface {
 	ListUsersOfChat(chatID string) ([]string, errors.GrpcChatError)
 	AddMessageToChat(userID, chatID, clientTime, message string) errors.GrpcChatError
 	GetMessagesAfter(chatID, clientTime string) ([]models.ChatMessage, errors.GrpcChatError)
+	ListOpenChatGroups() ([]models.ChatGroup, errors.GrpcChatError)
 }

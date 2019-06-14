@@ -49,6 +49,8 @@ message CreateChatRequest {
 
 message CreateChatResponse {
         string ChatID = 1;
+        bool Success = 2;
+        string Error = 3;
 }
 
 message ListChatRequest {
@@ -56,7 +58,7 @@ message ListChatRequest {
 }
 
 message ChatDetail {
-        string UserID = 1;
+        repeated string UserList = 1;
         string ChatName = 2;
         string ChatID = 3;
 }

@@ -59,6 +59,18 @@ func (store *ChatStore) ListUsersOfChat(chatID string) ([]string, errors.GrpcCha
 	return ret, nil
 }
 
+func (store *ChatStore) ListOpenChatGroups() ([]models.ChatGroup, errors.GrpcChatError) {
+	chatGroups := []models.ChatGroup{}
+	err := store.db.Find(&chatGroups).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return chatGroups, nil
+		}
+		return chatGroups, errors.NewInternalError(err)
+	}
+	return chatGroups, nil
+}
+
 func (store *ChatStore) AddMessageToChat(userID, chatID, clientTime, message string) errors.GrpcChatError {
 	ct, err := time.Parse(time.RFC1123Z, clientTime)
 	if err != nil {
