@@ -28,29 +28,41 @@ func (m *MemoryChatClient) ReadMessages(ctx context.Context, in *chat.TimeDesc, 
 	return nil, nil
 }
 
-func (m *MemoryChatClient) read() {
-	ctx := context.TODO()
-	recv, err := m.grpcClient.ReadMessages(ctx, &chat.TimeDesc{})
-	if err != nil {
-		fmt.Printf("Failed to read %v", err)
-		return
-	}
+func reader(recv chat.Chat_ReadMessagesClient, input chan string) {
+
 	msg, err := recv.Recv()
 	for err == nil {
-		fmt.Println(msg.Data)
+		input <- msg.Data
 		msg, err = recv.Recv()
-	}
-
-	if err != nil {
-		fmt.Printf("Failed to read %v", err)
-		return
 	}
 
 }
 
-func (m *MemoryChatClient) write(msg string) {
+func (m *MemoryChatClient) read(userToken, chatID string, quit chan int, done chan int) {
 	ctx := context.TODO()
-	wrappedMsg := &chat.Message{Data: msg}
+	recv, err := m.grpcClient.ReadMessages(ctx,
+		&chat.TimeDesc{UserToken: userToken, ChatID: chatID, Time: "Now"})
+	if err != nil {
+		fmt.Printf("Failed to read %v", err)
+		return
+	}
+
+	inputChan := make(chan string)
+	go reader(recv, inputChan)
+	for {
+		select {
+		case <-quit:
+			done <- 1
+			return
+		case line := <-inputChan:
+			fmt.Println(line)
+		}
+	}
+}
+
+func (m *MemoryChatClient) write(userToken string, chatID string, msg string) {
+	ctx := context.TODO()
+	wrappedMsg := &chat.Message{Data: msg, UserToken: userToken, ChatID: chatID}
 	_, err := m.grpcClient.WriteMessage(ctx, wrappedMsg)
 	if err != nil {
 		fmt.Printf("Failed to write: %v", err)
@@ -73,10 +85,8 @@ func (m *MemoryChatClient) Start(cmd []string) error {
 	m.connect(conn)
 
 	switch cmd[0] {
-	case "read":
-		m.read()
-	case "write":
-		m.write(cmd[1])
+	case "console":
+		m.console()
 	default:
 		fmt.Printf("Invalid command %s", cmd[0])
 	}
