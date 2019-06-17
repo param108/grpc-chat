@@ -5,17 +5,18 @@ import (
 	//std_errors "errors"
 	"fmt"
 	"github.com/param108/grpc-chat-server/chat"
+	"github.com/param108/grpc-chat-server/chatmanager"
 	//"github.com/param108/grpc-chat-server/errors"
 	"github.com/param108/grpc-chat-server/store"
 	"google.golang.org/grpc"
 	"net"
-	"time"
 )
 
 type ChatServerImpl struct {
 	Port int
 	Msgs []string
 	DB   store.Store
+	CM   chatmanager.ChatManager
 }
 
 func NewChatServer(port int) (*ChatServerImpl, error) {
@@ -23,23 +24,48 @@ func NewChatServer(port int) (*ChatServerImpl, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ChatServerImpl{Port: port, DB: db}, nil
-
+	CM := chatmanager.NewSimpleChatManager()
+	return &ChatServerImpl{Port: port, DB: db, CM: CM}, nil
 }
 
 func (server *ChatServerImpl) WriteMessage(ctx context.Context, msg *chat.Message) (*chat.Response, error) {
 	response := &chat.Response{}
+	err := server.CM.Write(msg.ChatID, msg)
+	if err != nil {
+		response.Success = false
+		response.Error = "FailToWrite"
+		fmt.Println("Failed to write")
+		return response, err
+	}
 	server.Msgs = append(server.Msgs, msg.Data)
+	response.Success = true
+	fmt.Println("success write:" + msg.Data)
 	return response, nil
 }
 
 func (server *ChatServerImpl) ReadMessages(t *chat.TimeDesc, chServer chat.Chat_ReadMessagesServer) error {
 	fmt.Println(len(server.Msgs))
-	for i := 0; i < len(server.Msgs); i++ {
-		chServer.Send(&chat.Message{Data: server.Msgs[i]})
-		time.Sleep(5 * time.Second)
+	sub, err := server.CM.Read(t.ChatID)
+	if err != nil {
+		return err
 	}
-	return nil
+
+	for {
+		select {
+		case v := <-sub.ReadChan:
+			if v == nil {
+				fmt.Println("Failing ReadMessages center closed connection")
+				return nil
+			}
+			fmt.Println(v)
+			err := chServer.Send(v.(*chat.Message))
+			if err != nil {
+				fmt.Println("Failing ReadMessages Cannot Send")
+				sub.Quit()
+				return nil
+			}
+		}
+	}
 }
 
 func (server *ChatServerImpl) Start() error {

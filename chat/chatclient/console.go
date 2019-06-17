@@ -80,7 +80,10 @@ func (m *MemoryChatClient) execute(words []string) {
 			fmt.Println("Failed to join chat:" + err.Error())
 			return
 		}
-
+	case "start_chat":
+		if len(words) != 2 {
+			fmt.Println("Usage: start_chat <chat_id>")
+		}
 		m.StartChat(UserToken, words[1])
 	}
 }
@@ -104,5 +107,4 @@ func (m *MemoryChatClient) StartChat(userToken string, chatID string) {
 			return
 		}
 	}
-
 }
