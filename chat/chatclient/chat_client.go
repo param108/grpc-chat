@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/param108/grpc-chat-server/chat"
+	"github.com/param108/grpc-chat/chat"
 	"google.golang.org/grpc"
 )
 
@@ -32,7 +32,7 @@ func reader(recv chat.Chat_ReadMessagesClient, input chan string) {
 
 	msg, err := recv.Recv()
 	for err == nil {
-		input <- msg.Data
+		input <- msg.Username + ":" + msg.Data
 		msg, err = recv.Recv()
 	}
 
@@ -60,9 +60,9 @@ func (m *MemoryChatClient) read(userToken, chatID string, quit chan int, done ch
 	}
 }
 
-func (m *MemoryChatClient) write(userToken string, chatID string, msg string) {
+func (m *MemoryChatClient) write(username string, userToken string, chatID string, msg string) {
 	ctx := context.TODO()
-	wrappedMsg := &chat.Message{Data: msg, UserToken: userToken, ChatID: chatID}
+	wrappedMsg := &chat.Message{Data: msg, Username: username, UserToken: userToken, ChatID: chatID}
 	_, err := m.grpcClient.WriteMessage(ctx, wrappedMsg)
 	if err != nil {
 		fmt.Printf("Failed to write: %v", err)

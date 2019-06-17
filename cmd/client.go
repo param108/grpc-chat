@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/param108/grpc-chat-server/chat/chatclient"
+	"github.com/param108/grpc-chat/chat/chatclient"
 	"github.com/spf13/cobra"
 )
 

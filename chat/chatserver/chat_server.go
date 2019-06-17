@@ -4,10 +4,10 @@ import (
 	"context"
 	//std_errors "errors"
 	"fmt"
-	"github.com/param108/grpc-chat-server/chat"
-	"github.com/param108/grpc-chat-server/chatmanager"
+	"github.com/param108/grpc-chat/chat"
+	"github.com/param108/grpc-chat/chatmanager"
 	//"github.com/param108/grpc-chat-server/errors"
-	"github.com/param108/grpc-chat-server/store"
+	"github.com/param108/grpc-chat/store"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -56,6 +56,9 @@ func (server *ChatServerImpl) ReadMessages(t *chat.TimeDesc, chServer chat.Chat_
 			if v == nil {
 				fmt.Println("Failing ReadMessages center closed connection")
 				return nil
+			}
+			if (v.(*chat.Message)).UserToken == t.UserToken {
+				continue
 			}
 			fmt.Println(v)
 			err := chServer.Send(v.(*chat.Message))

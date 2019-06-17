@@ -9,6 +9,7 @@ import (
 
 var (
 	UserToken string
+	Username  string
 	ChatID    string
 )
 
@@ -40,6 +41,7 @@ func (m *MemoryChatClient) execute(words []string) {
 			return
 		}
 
+		Username = words[1]
 		UserToken = r
 		fmt.Println(UserToken)
 	case "create_chat":
@@ -84,23 +86,22 @@ func (m *MemoryChatClient) execute(words []string) {
 		if len(words) != 2 {
 			fmt.Println("Usage: start_chat <chat_id>")
 		}
-		m.StartChat(UserToken, words[1])
+		m.StartChat(Username, UserToken, words[1])
 	}
 }
 
-func (m *MemoryChatClient) StartChat(userToken string, chatID string) {
+func (m *MemoryChatClient) StartChat(username string, userToken string, chatID string) {
 	reader := bufio.NewReader(os.Stdin)
 	quit := make(chan int)
 	done := make(chan int)
 	go m.read(userToken, chatID, quit, done)
 
 	for {
-		fmt.Print("# ")
 		text, _ := reader.ReadString('\n')
 		// convert CRLF to LF
 		text = strings.Replace(text, "\n", "", -1)
 
-		m.write(userToken, chatID, text)
+		m.write(username, userToken, chatID, text)
 		if text == "quit" {
 			quit <- 1
 			<-done

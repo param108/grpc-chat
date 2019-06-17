@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/param108/grpc-chat-server/cmd"
+	"github.com/param108/grpc-chat/cmd"
 	"log"
 	"os"
 )

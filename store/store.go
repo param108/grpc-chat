@@ -1,8 +1,8 @@
 package store
 
 import (
-	"github.com/param108/grpc-chat-server/errors"
-	"github.com/param108/grpc-chat-server/models"
+	"github.com/param108/grpc-chat/errors"
+	"github.com/param108/grpc-chat/models"
 )
 
 type Store interface {

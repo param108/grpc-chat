@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/param108/grpc-chat-server/chat/chatserver"
+	"github.com/param108/grpc-chat/chat/chatserver"
 	"github.com/spf13/cobra"
 	"os"
 	"strconv"

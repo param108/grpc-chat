@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/param108/grpc-chat-server/models"
+	"github.com/param108/grpc-chat/models"
 	"os"
 )
 

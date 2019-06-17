@@ -1,7 +1,7 @@
 package chatmanager
 
 import (
-	"github.com/param108/grpc-chat-server/pubsub"
+	"github.com/param108/grpc-chat/pubsub"
 	"sync"
 )
 
