@@ -2,11 +2,11 @@ package chatserver
 
 import (
 	"context"
-	//std_errors "errors"
+	std_errors "errors"
 	"fmt"
 	"github.com/param108/grpc-chat/chat"
 	"github.com/param108/grpc-chat/chatmanager"
-	//"github.com/param108/grpc-chat-server/errors"
+	"github.com/param108/grpc-chat/errors"
 	"github.com/param108/grpc-chat/store"
 	"google.golang.org/grpc"
 	"net"
@@ -87,13 +87,18 @@ func (server *ChatServerImpl) Start() error {
 func (server *ChatServerImpl) Login(ctx context.Context, loginRequest *chat.LoginRequest) (*chat.LoginResponse, error) {
 	user, err := server.DB.FindUser(loginRequest.Username)
 	if err != nil {
-		userVal, err := server.DB.CreateUser(loginRequest.Username, loginRequest.FirebaseKey,
+		userVal, err := server.DB.CreateUser(loginRequest.Username, loginRequest.Password,
 			"user")
 		if err != nil {
 			return &chat.LoginResponse{Success: false, Error: err.Code()}, err
 		}
 
 		user = userVal
+	}
+
+	if user.Password != loginRequest.Password {
+		err := errors.NewForbiddenError(std_errors.New("Invalid Password"))
+		return &chat.LoginResponse{Success: false, Error: err.Code()}, err
 	}
 
 	userToken, err := server.DB.CreateUserToken(user.ID)

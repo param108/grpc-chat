@@ -97,7 +97,7 @@ func (m *MemoryChatClient) Start(cmd []string) error {
 // Returns the UserToken for the user.
 func (m *MemoryChatClient) Login(username string, firebaseKey string) (string, error) {
 	ctx := context.TODO()
-	response, err := m.grpcClient.Login(ctx, &chat.LoginRequest{Username: username, FirebaseKey: firebaseKey})
+	response, err := m.grpcClient.Login(ctx, &chat.LoginRequest{Username: username, Password: firebaseKey})
 	if err != nil {
 		return "", err
 	}
