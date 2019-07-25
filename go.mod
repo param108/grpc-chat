@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.3.1
 	github.com/jinzhu/gorm v1.9.9
 	github.com/joho/godotenv v1.3.0
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/satori/go.uuid v1.2.0

@@ -17,18 +17,18 @@ func TestUserNotFound(t *testing.T) {
 
 func TestUserFound(t *testing.T) {
 	defer teardown()
-	createdUser := &models.User{Name: "user_1", FirebaseToken: "firebase_token_1", Role: "user"}
+	createdUser := &models.User{Name: "user_1", Password: "password_1", Role: "user"}
 	err := testStore.db.Create(createdUser).Error
 	user, err := testStore.FindUser("user_1")
 	assert.Nil(t, err, "Failed to find user_1")
 	assert.Equal(t, createdUser.Name, user.Name, "Wrong name found:"+user.Name)
-	assert.Equal(t, createdUser.FirebaseToken, user.FirebaseToken, "Wrong firebase token found:"+user.FirebaseToken)
+	assert.Equal(t, createdUser.Password, user.Password, "Wrong password found:"+user.Password)
 	assert.Equal(t, createdUser.Role, user.Role, "Wrong role found:"+user.Role)
 }
 
 func TestCreateUser(t *testing.T) {
 	defer teardown()
-	_, err := testStore.CreateUser("user_1", "firebase_token_1", "user")
+	_, err := testStore.CreateUser("user_1", "password_1", "user")
 	if err != nil {
 		assert.Nil(t, err, "Could not create user:"+err.Error())
 	}
@@ -37,34 +37,24 @@ func TestCreateUser(t *testing.T) {
 		assert.Nil(t, err, "Could not find user:"+err.Error())
 	}
 	assert.Equal(t, "user_1", user.Name, "Invalid name seen"+user.Name)
-	assert.Equal(t, "firebase_token_1", user.FirebaseToken, "Invalid firebase token seen"+user.FirebaseToken)
+	assert.Equal(t, "password_1", user.Password, "Invalid password seen"+user.Password)
 	assert.Equal(t, "user", user.Role, "Invalid role seen"+user.Role)
 
 }
 
 func TestCreateDuplicateUser(t *testing.T) {
 	defer teardown()
-	testStore.CreateUser("user_1", "firebase_token_1", "user")
-	_, err := testStore.CreateUser("user_1", "firebase_token_2", "user")
+	testStore.CreateUser("user_1", "password_1", "user")
+	_, err := testStore.CreateUser("user_1", "password_2", "user")
 	assert.NotNil(t, err, "Should not be able to create user")
 	if err != nil {
 		assert.Equal(t, errors.AlreadyExistsError, err.Code(), "Incorrect error code")
 	}
 }
 
-func TestCreateDuplicateFirebaseToken(t *testing.T) {
-	defer teardown()
-	testStore.CreateUser("user_1", "firebase_token_1", "user")
-	_, err := testStore.CreateUser("user_2", "firebase_token_1", "user")
-	assert.NotNil(t, err, "Should not be able to create user")
-	if err != nil {
-		assert.Equal(t, errors.InternalError, err.Code(), "Incorrect error code")
-	}
-}
-
 func TestUpdateFirebaseToken(t *testing.T) {
 	defer teardown()
-	user, _ := testStore.CreateUser("user_1", "firebase_token_1", "user")
+	user, _ := testStore.CreateUser("user_1", "password_1", "user")
 	err := testStore.UpdateFirebaseToken(user.ID, "new_firebase_token")
 	if err != nil {
 		assert.Nil(t, err, "Failed to update token:"+err.Error())
@@ -88,7 +78,9 @@ func TestUpdateFirebaseTokenNotFound(t *testing.T) {
 
 func TestCreateUserToken(t *testing.T) {
 	defer teardown()
-	user, _ := testStore.CreateUser("user_1", "firebase_token_1", "user")
+	user, _ := testStore.CreateUser("user_1", "password_1", "user")
+	testStore.UpdateFirebaseToken(user.ID, "firebase_token_1")
+	user, _ = testStore.FindUser(user.Name)
 	userToken, err := testStore.CreateUserToken(user.ID)
 	if err != nil {
 		assert.Nil(t, err, "Failed to create user token:"+err.Error())
@@ -100,7 +92,8 @@ func TestCreateUserToken(t *testing.T) {
 
 func TestCreateSecondUserToken(t *testing.T) {
 	defer teardown()
-	user, _ := testStore.CreateUser("user_1", "firebase_token_1", "user")
+	user, _ := testStore.CreateUser("user_1", "password_1", "user")
+	testStore.UpdateFirebaseToken(user.ID, "firebase_token_1")
 	oldUserToken, _ := testStore.CreateUserToken(user.ID)
 	_, err := testStore.CreateUserToken(user.ID)
 	if err != nil {
@@ -114,8 +107,10 @@ func TestCreateSecondUserToken(t *testing.T) {
 
 func TestCreateSecondUserTokenWithOtherUser(t *testing.T) {
 	defer teardown()
-	user, _ := testStore.CreateUser("user_1", "firebase_token_1", "user")
-	user2, _ := testStore.CreateUser("user_2", "firebase_token_2", "user")
+	user, _ := testStore.CreateUser("user_1", "password_1", "user")
+	testStore.UpdateFirebaseToken(user.ID, "firebase_token_1")
+	user2, _ := testStore.CreateUser("user_2", "password_2", "user")
+	testStore.UpdateFirebaseToken(user.ID, "firebase_token_2")
 	testStore.CreateUserToken(user2.ID)
 	oldUserToken, _ := testStore.CreateUserToken(user.ID)
 	_, err := testStore.CreateUserToken(user.ID)
@@ -134,7 +129,8 @@ func TestCreateSecondUserTokenWithOtherUser(t *testing.T) {
 
 func TestFindUserToken(t *testing.T) {
 	defer teardown()
-	user, _ := testStore.CreateUser("user_1", "firebase_token_1", "user")
+	user, _ := testStore.CreateUser("user_1", "password_1", "user")
+	testStore.UpdateFirebaseToken(user.ID, "firebase_token_1")
 	userToken, _ := testStore.CreateUserToken(user.ID)
 	foundUserToken, err := testStore.FindUserToken(userToken.UserToken)
 	if err != nil {
@@ -153,7 +149,9 @@ func TestFindUserTokenNotFound(t *testing.T) {
 
 func TestFindUserFromToken(t *testing.T) {
 	defer teardown()
-	user, _ := testStore.CreateUser("user_1", "firebase_token_1", "user")
+	user, _ := testStore.CreateUser("user_1", "password_1", "user")
+	testStore.UpdateFirebaseToken(user.ID, "firebase_token_1")
+	user, _ = testStore.FindUser(user.Name)
 	userToken, _ := testStore.CreateUserToken(user.ID)
 	foundUser, err := testStore.FindUserFromToken(userToken.UserToken)
 	if err != nil {

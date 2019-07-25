@@ -19,8 +19,8 @@ func (store *ChatStore) FindUser(username string) (*models.User, errors.GrpcChat
 	return &user, nil
 }
 
-func (store *ChatStore) CreateUser(username string, firebaseToken string, userRole string) (*models.User, errors.GrpcChatError) {
-	createdUser := &models.User{Name: username, FirebaseToken: firebaseToken, Role: userRole}
+func (store *ChatStore) CreateUser(username string, password string, userRole string) (*models.User, errors.GrpcChatError) {
+	createdUser := &models.User{Name: username, Password: password, Role: userRole}
 	createErr := store.db.Create(createdUser).Error
 	if createErr != nil {
 		// check if user already exists
