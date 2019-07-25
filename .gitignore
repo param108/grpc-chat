@@ -2,3 +2,4 @@ chat/chat.pb.go
 .env
 out
 chat/java
+grpc-chat

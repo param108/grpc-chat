@@ -4,6 +4,7 @@ import (
 	"context"
 	std_errors "errors"
 	"fmt"
+	"github.com/param108/grpc-chat/cache"
 	"github.com/param108/grpc-chat/chat"
 	"github.com/param108/grpc-chat/chatmanager"
 	"github.com/param108/grpc-chat/errors"
@@ -16,11 +17,18 @@ type ChatServerImpl struct {
 	Port int
 	Msgs []string
 	DB   store.Store
+	C    cache.Cache
 	CM   chatmanager.ChatManager
 }
 
 func NewChatServer(port int) (*ChatServerImpl, error) {
 	db, err := store.NewChatStore()
+	if err != nil {
+		return nil, err
+	}
+
+	C := cache.NewRedisCache()
+	err = C.Connect()
 	if err != nil {
 		return nil, err
 	}
