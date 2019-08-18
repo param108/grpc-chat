@@ -12,7 +12,7 @@ var ClientCmd = &cobra.Command{
 }
 
 func clientCmdF(cmd *cobra.Command, args []string) error {
-	ch := chatclient.NewMemoryChatClient(9090)
+	ch := chatclient.NewMemoryChatClient(args[1], args[2], args[3])
 	ch.Start(args)
 	return nil
 }

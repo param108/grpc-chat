@@ -2,20 +2,26 @@ package chatclient
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"github.com/param108/grpc-chat/chat"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type MemoryChatClient struct {
 	grpcClient chat.ChatClient
-	Port       int
+	Port       string
+	Host       string
+	Ssl        bool
 }
 
-func NewMemoryChatClient(port int) *MemoryChatClient {
+func NewMemoryChatClient(host, port, ssl string) *MemoryChatClient {
 	return &MemoryChatClient{
 		Port: port,
+		Host: host,
+		Ssl:  (ssl == "ssl"),
 	}
 }
 
@@ -75,11 +81,26 @@ func (m *MemoryChatClient) connect(conn *grpc.ClientConn) {
 }
 
 func (m *MemoryChatClient) Start(cmd []string) error {
-	serverAddr := fmt.Sprintf("localhost:%d", m.Port)
-	conn, err := grpc.Dial(serverAddr, grpc.WithInsecure())
-	if err != nil {
-		fmt.Printf("fail to dial: %v", err)
+	serverAddr := fmt.Sprintf("%s:%s", m.Host, m.Port)
+	fmt.Println(serverAddr)
+	var conn *grpc.ClientConn
+	if m.Ssl {
+		creds := credentials.NewTLS(&tls.Config{})
+		connval, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(creds))
+		if err != nil {
+			fmt.Printf("fail to dial: %v", err)
+			return err
+		}
+		conn = connval
+	} else {
+		connval, err := grpc.Dial(serverAddr, grpc.WithInsecure())
+		if err != nil {
+			fmt.Printf("fail to dial: %v", err)
+			return err
+		}
+		conn = connval
 	}
+
 	defer conn.Close()
 
 	m.connect(conn)

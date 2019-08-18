@@ -20,7 +20,8 @@
 
 7. Run the client in console mode
 
-./out/grpc-chat client console
+./out/grpc-chat client console hostname port [ssl|nossl]
+use ssl if you have an nginx to terminate the ssl
 
 8. You should see
 
@@ -31,7 +32,7 @@ prompt
 
 ## Prompt commands for client
 
-1. `login <username> <some key>`
+1. `login <username> <password>`
 - this logs you in. The server doesnt do authentication rt now, so the key is useless
 
 2. `create_chat <chat name>`
@@ -48,14 +49,14 @@ bumbum	8cd61367-8556-4bfb-a3aa-940b7f209700	a39b2fdf-e5d0-41a1-8893-c4cfb7ae6bb0
 baby	8d8c3079-c679-4f29-81a7-114eb4e8fe44	a39b2fdf-e5d0-41a1-8893-c4cfb7ae6bb0
 ```
 
-4. `start_chat <chat id>`
-- use the second column from `list_chats` output.
+4. `start_chat <chat name>`
+- use the first column from `list_chats` output.
 
 5. now just type and you should see the chat on all clients who have connected.
 - other users will have their username prefixed
 
 ```
--> start_chat 5fa89b3d-e154-44c4-ad41-785d8a330535
+-> start_chat blublu
 Hi I am param
 anil:hello
 anil:I am anil
