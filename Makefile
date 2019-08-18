@@ -24,6 +24,10 @@ build:	chat/chat.pb.go ${GO_FILES}
 	mkdir -p out
 	go build  -o out/grpc_chat
 
+bundle: build
+	cp ${PRODUCTION_CONFIG} out/.env
+	cp -R db out/
+	tar -zcvf bundle.tgz out
 
 build-java: chat/chat.proto
 	rm -rf chat/java
